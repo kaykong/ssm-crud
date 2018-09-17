@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <!--驼峰命名法-->
+    <settings>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <setting name="logImpl" value="LOG4J"/>
+    </settings>
+
+    <!--给包下面的类文件起别名-->
+    <typeAliases>
+        <package name="top.kongk.ssmcrud.bean"/>
+    </typeAliases>
+
+</configuration>

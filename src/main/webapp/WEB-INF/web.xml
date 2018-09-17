@@ -1,0 +1,105 @@
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+    <!-- 1-1. 从类路径下加载Spring配置，classpath关键字特指类路径下加载 -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:applicationContext.xml</param-value>
+    </context-param>
+
+
+    <!--3.配置enCoding 的filter-->
+
+    <!-- 在Spring框架中是如何解决从页面传来的字符串的编码问题的呢？
+    下面我们来看看Spring框架给我们提供过滤器CharacterEncodingFilter
+     这个过滤器就是针对于每次浏览器请求进行过滤的，然后再其之上添加了父类没有的功能即处理字符编码。
+      其中encoding用来设置编码格式，forceEncoding用来设置是否理会 request.getCharacterEncoding()方法，
+      设置为true则强制覆盖之前的编码格式。-->
+    <filter>
+        <filter-name>characterEncodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+
+
+    <!--4 配置rest风格的URI 的filter HiddenHttpMethodFilter
+    它会把post请求通过传来的一个map键值对, 转变成相应的put delete-->
+    <filter>
+        <filter-name>hiddenHttpMethodFilter</filter-name>
+        <filter-class>org.springframework.web.filter.HiddenHttpMethodFilter</filter-class>
+    </filter>
+
+    <!--配置PUT请求-->
+    <filter>
+        <filter-name>httpPutFormContentFilter</filter-name>
+        <filter-class>org.springframework.web.filter.HttpPutFormContentFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>httpPutFormContentFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>characterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>hiddenHttpMethodFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- 1-2 负责启动Spring容器的监听器，它将引用1处的上下文参数获得Spring配置文件的地址 -->
+    <listener>
+        <listener-class>
+            org.springframework.web.context.ContextLoaderListener
+        </listener-class>
+    </listener>
+
+    <!--2.配置springMVC的dispatcherServlet-->
+    <!--在DispatcherServlet的初始化过程中，
+    框架会在web应用的 WEB-INF文件夹下寻找名为[servlet-name]-servlet.xml 的配置文件，
+    生成文件中定义的bean。-->
+    <servlet>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <!--指明了配置文件的文件名，不使用默认配置文件名，而使用dispatcher-servlet.xml配置文件。-->
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <!--其中<param-value>**.xml</param-value> 这里可以使用多种写法-->
+            <!--1、不写,使用默认值:/WEB-INF/<servlet-name>-servlet.xml-->
+            <!--2、<param-value>/WEB-INF/classes/dispatcher-servlet.xml</param-value>-->
+            <!--3、<param-value>classpath*:dispatcher-servlet.xml</param-value>-->
+            <!--4、多个值用逗号分隔-->
+            <param-value>classpath:springmvc/dispatcherServlet.xml</param-value>
+        </init-param>
+        <!--是启动顺序，让这个Servlet随Servletp容器一起启动。-->
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <!--这个Servlet的名字是dispatcher，可以有多个DispatcherServlet，是通过名字来区分的。
+        每一个DispatcherServlet有自己的WebApplicationContext上下文对象。
+        同时保存的ServletContext中和Request对象中.-->
+        <!--ApplicationContext是Spring的核心，Context我们通常解释为上下文环境，
+        我想用“容器”来表述它更容易理解一些，ApplicationContext则是“应用的容器”了:P，
+        Spring把Bean放在这个容器中，在需要的时候，用getBean方法取出-->
+        <servlet-name>dispatcherServlet</servlet-name>
+        <!--Servlet拦截匹配规则可以自已定义，当映射为@RequestMapping("/user/add")时，为例,拦截哪种URL合适？-->
+        <!--1、拦截*.do、*.htm， 例如：/user/add.do,这是最传统的方式，最简单也最实用。不会导致静态文件（jpg,js,css）被拦截。-->
+        <!--2、拦截/，例如：/user/add,可以实现现在很流行的REST风格。
+        很多互联网类型的应用很喜欢这种风格的URL。弊端：会导致静态文件（jpg,js,css）被拦截后不能正常显示。 -->
+        <url-pattern>/</url-pattern> <!--会拦截URL中带“/”的请求。-->
+    </servlet-mapping>
+
+</web-app>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="top.kongk.ssmcrud.dao.EmployeeDao">
+
+    <!--Employee中包含Department对象-->
+    <!--从 tb_emp 和 tb_dept 中 select * 获取到的列名, 其中列名没有重复, 不需要另外给某个列起别名 -->
+    <!--emp_id  emp_name  gender  email  depart_id  dept_id  dept_name -->
+    <resultMap id="EmpWithDeptMap" type="top.kongk.ssmcrud.bean.Employee">
+        <!--<id column="emp_id" property="empId"></id>
+        <result column="emp_name" property="empName"></result>
+        <result column="gender" property="gender"></result>
+        <result column="email" property="email"></result>
+        <result column="depart_id" property="departId"></result>-->
+
+        <!--以上mybatis会自动去对应, 但是department属性就需要自己配了,否则department将是null-->
+        <result column="dept_id" property="department.deptId"></result>
+        <result column="dept_name" property="department.deptName"></result>
+    </resultMap>
+
+    <!--
+    //通过主键查询 employee
+    Employee selectByPrimaryKey(Integer empId);
+    -->
+    <select id="selectByPrimaryKey" resultMap="EmpWithDeptMap" parameterType="java.lang.Integer">
+        SELECT * FROM tb_emp, tb_dept
+        WHERE tb_emp.depart_id = tb_dept.dept_id AND emp_id = #{id}
+    </select>
+
+
+    <!--
+    //通过名字精确查找 employee 的数量, limit 1
+    int countByName(String name);-->
+    <select id="countByName" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT emp_id FROM tb_emp WHERE emp_name = #{name} limit 1;
+    </select>
+
+    <!--
+    //无条件分页查询,返回的是某一页的list (首页需要), 需要employee中的department属性
+    List<Employee> selectAllWithPage(@Param("start") Integer start, @Param("pageSize") Integer pageSize);
+    -->
+    <select id="selectAllWithPage" resultMap="EmpWithDeptMap">
+        SELECT * FROM tb_emp, tb_dept
+        WHERE tb_emp.depart_id = tb_dept.dept_id
+        ORDER BY emp_id
+        <if test="start != null and pageSize != null">
+            limit #{start} , #{pageSize}
+        </if>
+    </select>
+
+    <!-- 查询符合条件的个数
+    //根据employee中的条件,查询符合条件的个数 原:employeeMapper.selectByMapWithoutPage(map));
+    int countBySelective(Employee employee);-->
+    <select id="countBySelective" resultType="java.lang.Integer">
+        SELECT count(emp_id) FROM tb_emp
+        <where>
+            <if test="empId != null" >
+                emp_id = #{empId}
+            </if>
+            <if test="empName != null" >
+                and emp_name LIKE #{empName}
+            </if>
+            <if test="gender != null" >
+                and gender = #{gender}
+            </if>
+            <if test="email != null" >
+                and email LIKE #{email}
+            </if>
+            <if test="departId != null" >
+                and depart_id = #{departId}
+            </if>
+        </where>
+    </select>
+
+    <!--
+    //根据employee中的条件,分页查询,返回的是某一页的list (按条件查询, 分页返回)
+    List<Employee> selectBySelectiveWithPage(
+    Employee employee, @Param("start") Integer start, @Param("pageSize") Integer pageSize);-->
+    <select id="selectBySelectiveWithPage" parameterType="java.util.Map"
+            resultMap="EmpWithDeptMap">
+        SELECT * FROM tb_emp
+        LEFT JOIN tb_dept ON tb_emp.depart_id = tb_dept.dept_id
+        <where>
+            <if test="employee.empId != null" >
+                emp_id = #{employee.empId}
+            </if>
+            <if test="employee.empName != null" >
+                and emp_name LIKE #{employee.empName}
+            </if>
+            <if test="employee.gender != null" >
+                and gender = #{employee.gender}
+            </if>
+            <if test="employee.email != null" >
+                and email LIKE #{employee.email}
+            </if>
+            <if test="employee.departId != null" >
+                and depart_id = #{employee.departId}
+            </if>
+        </where>
+        ORDER BY emp_id
+        <if test="start != null and pageSize != null">
+            limit #{start} , #{pageSize}
+        </if>
+    </select>
+
+    <!--
+    //根据empId组成的list 删除
+    int deleteByEmpIdList(List<Integer> list);
+    -->
+    <delete id="deleteByEmpIdList" parameterType="java.util.List">
+        DELETE FROM tb_emp WHERE emp_id IN
+        <foreach collection="list" item="empId" open="(" separator="," close=")">
+            #{empId}
+        </foreach>
+    </delete>
+
+    <!--
+    //通过主键和employee对象中不为空的值 来更新 employee
+    boolean updateByPrimaryKeySelective(Employee employee);
+    -->
+    <update id="updateByPrimaryKeySelective" parameterType="top.kongk.ssmcrud.bean.Employee" >
+        update tb_emp
+        <set >
+            <if test="empName != null" >
+                emp_name = #{empName},
+            </if>
+            <if test="gender != null" >
+                gender = #{gender},
+            </if>
+            <if test="email != null" >
+                email = #{email},
+            </if>
+            <if test="departId != null" >
+                depart_id = #{departId},
+            </if>
+        </set>
+        where emp_id = #{empId}
+    </update>
+
+
+    <!--
+    //插入员工
+    int insertSelective(Employee employee);
+    -->
+    <insert id="insert" parameterType="top.kongk.ssmcrud.bean.Employee">
+        INSERT INTO tb_emp (emp_name, gender, email, depart_id)
+        values (#{empName,jdbcType=VARCHAR},#{gender,jdbcType=CHAR},
+        #{email,jdbcType=VARCHAR}, #{departId,jdbcType=INTEGER})
+    </insert>
+
+</mapper>
