@@ -6,5 +6,6 @@
   并且添加了按条件查询功能。<br>
   刚开始跟着视频一起用mybatis逆向工程，生成了实体类，mapper 接口以及其对应的 xml 。<br> 
   后来自己根据项目的需求重新写了 mapper 接口和 xml 映射文件， 看起来简化了很多! <br><br>
+####  我做的这个已经提交到了自己的服务器上, 项目演示地址:  http://kongk.top/ssm-crud <br>
   
-视频连接: https://pan.baidu.com/s/1eTcHjRc#list/path=%2F
+教学视频连接: https://pan.baidu.com/s/1eTcHjRc#list/path=%2F
