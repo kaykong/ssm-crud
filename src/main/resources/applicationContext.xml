@@ -13,7 +13,7 @@
     </context:component-scan>
 
     <!--数据源: 引入properties 以及配置 datasource-->
-    <context:property-placeholder location="classpath:dbconfig.properties"></context:property-placeholder>
+    <context:property-placeholder location="classpath:dbconfig-local.properties"></context:property-placeholder>
 
     <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
         <property name="jdbcUrl" value="${jdbc.jdbcUrl}"></property>
